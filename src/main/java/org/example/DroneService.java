@@ -23,22 +23,24 @@ public class DroneService {
     int port;
     InetAddress address;
 
-    public DroneService(  InetAddress address,int port) throws SocketException {
+    public DroneService(InetAddress address, int port) throws SocketException {
         // Initialize the socket and bind it to the specific port
         this.socket = new DatagramSocket(port);
-        this.address=address;
-        this.scheduler= Executors.newScheduledThreadPool(1);
+        this.address = address;
+        this.scheduler = Executors.newScheduledThreadPool(1);
     }
-    public void flightService(){
+
+    public void flightService() {
         AIRCRAFT.flyToNextWayPoint();
         if (!AIRCRAFT.isCurrentMissionCompleted()) {
-            broadcastMissionItemReachedMessage(AIRCRAFT.getMissionSeq()-1);
+            broadcastMissionItemReachedMessage(AIRCRAFT.getMissionSeq() - 1);
         }
     }
+
     public void listenerService() {
         try {
             while (true) {
-                  System.out.println("Listening for MAVLink messages on UDP port 14551...");
+                System.out.println("Listening for MAVLink messages on UDP port 14551...");
                 byte[] buffer = new byte[4096]; // Create a buffer to hold incoming data
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet); // Receive the incoming packet
@@ -52,9 +54,9 @@ public class DroneService {
                 // Read MAVLink message
                 MavlinkMessage<?> message = connection.next();
 
-                // Check if the message is a Heartbeat
+                // Check the messages
                 if (message.getPayload() instanceof Heartbeat) {
-                    System.out.println("Heartbeat message received.........");
+                    System.out.println("Heartbeat message received.........");// this was for testing
                 } else if (message.getPayload() instanceof MissionRequestList) {
                     System.out.println("Mission_Request_List message received.........");
                     broadcastMissionCountMessage();
@@ -73,9 +75,9 @@ public class DroneService {
         }
     }
 
-    public void  broadcastMissionItemReachedMessage(int seq){
+    public void broadcastMissionItemReachedMessage(int seq) {
         try {
-            MissionItemReached missionItemReached=MissionItemReached.builder()
+            MissionItemReached missionItemReached = MissionItemReached.builder()
                     .seq(seq)
                     .build();
 
@@ -87,24 +89,25 @@ public class DroneService {
             byte[] messageBytes = baos.toByteArray();
 
             // Create and send the packet
-            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, address, port);
             socket.send(packet);
             System.out.println("Mission_item_Reached  message sent.");
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Failed to send Mission_Item_Int message: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    public void  broadcastMissionItemIntMessage(int itemSeq){
+
+    public void broadcastMissionItemIntMessage(int itemSeq) {
         try {
-             MissionItemInt missionItemInt= MissionItemInt.builder().
-                        seq(itemSeq)
-                        .current(AIRCRAFT.getMissionItemsList().get(itemSeq).getCurrent())
-                        .autocontinue(AIRCRAFT.getMissionItemsList().get(itemSeq).getAutocontinue())
-                        .x(AIRCRAFT.getMissionItemsList().get(itemSeq).getX())
-                        .y(AIRCRAFT.getMissionItemsList().get(itemSeq).getY())
-                        .z(AIRCRAFT.getMissionItemsList().get(itemSeq).getZ())
-                        .build();
+            MissionItemInt missionItemInt = MissionItemInt.builder().
+                    seq(itemSeq)
+                    .current(AIRCRAFT.getMissionItemsList().get(itemSeq).getCurrent())
+                    .autocontinue(AIRCRAFT.getMissionItemsList().get(itemSeq).getAutocontinue())
+                    .x(AIRCRAFT.getMissionItemsList().get(itemSeq).getX())
+                    .y(AIRCRAFT.getMissionItemsList().get(itemSeq).getY())
+                    .z(AIRCRAFT.getMissionItemsList().get(itemSeq).getZ())
+                    .build();
 
 // Serialize the message
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -114,20 +117,21 @@ public class DroneService {
             byte[] messageBytes = baos.toByteArray();
 
             // Create and send the packet
-            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, address, port);
             socket.send(packet);
             System.out.println("Mission_item_int  message sent.");
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Failed to send Mission_Item_Int message: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    public void  broadcastMissionCountMessage(){
-            try {
-        MissionCount missionCount= MissionCount.builder()
-                .count(AIRCRAFT.numberOfWayPoints())
-                .missionType(MavMissionType.MAV_MISSION_TYPE_MISSION)
-                .build();
+
+    public void broadcastMissionCountMessage() {
+        try {
+            MissionCount missionCount = MissionCount.builder()
+                    .count(AIRCRAFT.numberOfWayPoints())
+                    .missionType(MavMissionType.MAV_MISSION_TYPE_MISSION)
+                    .build();
 // Serialize the message
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             MavlinkConnection connection = MavlinkConnection.create(null, baos);
@@ -136,21 +140,23 @@ public class DroneService {
             byte[] messageBytes = baos.toByteArray();
 
             // Create and send the packet
-            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, address, port);
             socket.send(packet);
             System.out.println("Mission Count message sent.");
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Failed to send Mission Count message: " + e.getMessage());
             e.printStackTrace();
- }
+        }
     }
- public void startMissionCurrentBroadcast() {
+
+    public void startMissionCurrentBroadcast() {
         // Schedule the broadcastMissionCurrent to run every second
-     scheduler.scheduleWithFixedDelay(this::broadcastMissionCurrent, 0, 1, TimeUnit.SECONDS);
+        scheduler.scheduleWithFixedDelay(this::broadcastMissionCurrent, 0, 1, TimeUnit.SECONDS);
     }
-void broadcastMissionCurrent() {
+
+    void broadcastMissionCurrent() {
         try {
-        MissionCurrent missionCurrent=MissionCurrent.builder()
+            MissionCurrent missionCurrent = MissionCurrent.builder()
                     .seq(AIRCRAFT.getCurrentMission().getSeq()) // The sequence number of the current mission item
                     .total(AIRCRAFT.getCurrentMission().getTotal())
                     .missionState()
@@ -163,14 +169,14 @@ void broadcastMissionCurrent() {
 
             byte[] messageBytes = baos.toByteArray();
             // Create and send the packet
-            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, address, port);
             socket.send(packet);
             System.out.println("Mission Current message sent.");
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Failed to send Mission Current message: " + e.getMessage());
             e.printStackTrace();
- }
-}
+        }
+    }
 }
 
 

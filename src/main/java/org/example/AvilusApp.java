@@ -11,10 +11,10 @@ public class AvilusApp {
         try {
             DataService dataService = new DataService();
             dataService.initData();
-            InetAddress address=InetAddress.getByName("localhost");
+            InetAddress address = InetAddress.getByName("localhost");
             int port = 14551;  // Port to listen on na d send messages
-           ThreadService threadService=new ThreadService();
-           threadService.startThreads(address,port);
+            ThreadService threadService = new ThreadService();
+            threadService.startThreads(address, port);
 
         } catch (SocketException e) {
             System.err.println("Socket exception: " + e.getMessage());
