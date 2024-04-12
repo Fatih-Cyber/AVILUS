@@ -5,21 +5,32 @@ import java.util.ArrayList;
 public class AircraftState {
     private ArrayList<MissionItemData> missionItemsList;
     private MissionCurrentData currentMissionData;
-    float latitude;
-    float longitude;
-    float altitude;
-    float speed;
-    boolean isOnGround;
-    boolean isPowerOn;
-    boolean isSystemActive;
-    int missionId;
-    int systemId;
-    int missionSeq;
+    private float latitude;
+    private float longitude;
+    private float altitude;
+    private float speed;
+    private boolean isOnGround;
+    private boolean isPowerOn;
+    private boolean isSystemActive;
+    private int missionId;
+    private int systemId;
+    private int missionSeq;
+
+    public boolean isCurrentMissionCompleted() {
+        return isCurrentMissionCompleted;
+    }
+
+    public void setCurrentMissionCompleted(boolean currentMissionCompleted) {
+        isCurrentMissionCompleted = currentMissionCompleted;
+    }
+
+    private boolean isCurrentMissionCompleted;
 
     public void flyToNextWayPoint(){
         if (this.missionSeq<this.getCurrentMission().getTotal()){
             this.missionSeq=+1;
-        }
+        }else setCurrentMissionCompleted(true);
+
         // broadCast MISSION_ITEM_REACHED
     }
     public int numberOfWayPoints(){return getMissionItemsList().size();};

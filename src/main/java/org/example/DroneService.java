@@ -26,7 +26,12 @@ public class DroneService {
         this.socket = new DatagramSocket(port);
         this.scheduler= Executors.newScheduledThreadPool(1);
     }
-
+    public void flightService(){
+        AIRCRAFT.flyToNextWayPoint();
+        if (!AIRCRAFT.isCurrentMissionCompleted()) {
+            broadcastMissionItemReachedMessage(AIRCRAFT.getMissionSeq()-1);
+        }
+    }
     public void listenerService() {
         try {
             while (true) {
@@ -62,6 +67,31 @@ public class DroneService {
             if (socket != null) {
                 socket.close();
             }
+        }
+    }
+    public void  broadcastMissionItemReachedMessage(int seq){
+        try {
+            MissionItemReached missionItemReached=MissionItemReached.builder()
+                    .seq(seq)
+                    .build();
+
+// Serialize the message
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MavlinkConnection connection = MavlinkConnection.create(null, baos);
+            connection.send2(0, 0, missionItemReached);
+
+            byte[] messageBytes = baos.toByteArray();
+// Specify the target IP address and port
+        InetAddress address = InetAddress.getByName("localhost"); // Use the correct target IP address
+        int port = 14551; // Use the correct port
+
+            // Create and send the packet
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
+            socket.send(packet);
+            System.out.println("Mission_item_Reached  message sent.");
+        } catch (IOException e){
+            System.err.println("Failed to send Mission_Item_Int message: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     public void  broadcastMissionItemIntMessage(int itemSeq){
