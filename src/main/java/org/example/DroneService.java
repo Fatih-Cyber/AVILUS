@@ -68,11 +68,11 @@ public class DroneService {
         try {
              MissionItemInt missionItemInt= MissionItemInt.builder().
                         seq(itemSeq)
-                        .current(0)
-                        .autocontinue(1)
-                        .x()
-                        .y()
-                        .z()
+                        .current(AIRCRAFT.getMissionItemsList().get(itemSeq).getCurrent())
+                        .autocontinue(AIRCRAFT.getMissionItemsList().get(itemSeq).getAutocontinue())
+                        .x(AIRCRAFT.getMissionItemsList().get(itemSeq).getX())
+                        .y(AIRCRAFT.getMissionItemsList().get(itemSeq).getY())
+                        .z(AIRCRAFT.getMissionItemsList().get(itemSeq).getZ())
                         .build();
 
 // Serialize the message
@@ -97,7 +97,7 @@ public class DroneService {
     public void  broadcastMissionCountMessage(){
             try {
         MissionCount missionCount= MissionCount.builder()
-                .count(AIRCRAFT.getNumberOfWayPoints())
+                .count(AIRCRAFT.numberOfWayPoints())
                 .missionType(MavMissionType.MAV_MISSION_TYPE_MISSION)
                 .build();
 // Serialize the message
@@ -126,10 +126,10 @@ public class DroneService {
 void broadcastMissionCurrent() {
         try {
         MissionCurrent missionCurrent=MissionCurrent.builder()
-                    .seq(1) // The sequence number of the current mission item
-                    .total(1)
+                    .seq(AIRCRAFT.getCurrentMission().getSeq()) // The sequence number of the current mission item
+                    .total(AIRCRAFT.getCurrentMission().getTotal())
                     .missionState()
-                    .missionMode(1)
+                    .missionMode(AIRCRAFT.getCurrentMission().getMission_mode())
                     .build();
 // Serialize the message
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -3,9 +3,26 @@ package org.example.model;
 import java.util.ArrayList;
 
 public class AircraftState {
-    private int numberOfWayPoints;
+    private ArrayList<MissionItemData> missionItemsList;
     private MissionCurrentData currentMissionData;
+    float latitude;
+    float longitude;
+    float altitude;
+    float speed;
+    boolean isOnGround;
+    boolean isPowerOn;
+    boolean isSystemActive;
+    int missionId;
+    int systemId;
+    int missionSeq;
 
+    public void flyToNextWayPoint(){
+        if (this.missionSeq<this.getCurrentMission().getTotal()){
+            this.missionSeq=+1;
+        }
+        // broadCast MISSION_ITEM_REACHED
+    }
+    public int numberOfWayPoints(){return getMissionItemsList().size();};
     public ArrayList<MissionItemData> getMissionItemsList() {
         return missionItemsList;
     }
@@ -13,8 +30,6 @@ public class AircraftState {
     public void setMissionItemsList(ArrayList<MissionItemData> missionItemsList) {
         this.missionItemsList = missionItemsList;
     }
-
-    private ArrayList<MissionItemData> missionItemsList;
 
     public MissionCurrentData getCurrentMission() {
         return currentMissionData;
@@ -24,15 +39,83 @@ public class AircraftState {
         this.currentMissionData = currentMissionData;
     }
 
-    public AircraftState(int numberOfWayPoints) {
-        this.numberOfWayPoints = numberOfWayPoints;
+    public float getLatitude() {
+        return latitude;
     }
 
-    public int getNumberOfWayPoints() {
-        return numberOfWayPoints;
+    public void setLatitude(float latitude) {
+        this.latitude = latitude;
     }
 
-    public void setNumberOfWayPoints(int numberOfWayPoints) {
-        this.numberOfWayPoints = numberOfWayPoints;
+    public float getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(float longitude) {
+        this.longitude = longitude;
+    }
+
+    public float getAltitude() {
+        return altitude;
+    }
+
+    public void setAltitude(float altitude) {
+        this.altitude = altitude;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public boolean isOnGround() {
+        return isOnGround;
+    }
+
+    public void setOnGround(boolean onGround) {
+        isOnGround = onGround;
+    }
+
+    public boolean isPowerOn() {
+        return isPowerOn;
+    }
+
+    public void setPowerOn(boolean powerOn) {
+        isPowerOn = powerOn;
+    }
+
+    public boolean isSystemActive() {
+        return isSystemActive;
+    }
+
+    public void setSystemActive(boolean systemActive) {
+        isSystemActive = systemActive;
+    }
+
+    public int getMissionId() {
+        return missionId;
+    }
+
+    public void setMissionId(int missionId) {
+        this.missionId = missionId;
+    }
+
+    public int getSystemId() {
+        return systemId;
+    }
+
+    public void setSystemId(int systemId) {
+        this.systemId = systemId;
+    }
+
+    public int getMissionSeq() {
+        return missionSeq;
+    }
+
+    public void setMissionSeq(int missionSeq) {
+        this.missionSeq = missionSeq;
     }
 }
