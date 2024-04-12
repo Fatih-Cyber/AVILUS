@@ -8,13 +8,10 @@ import java.net.SocketException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import io.dronefleet.mavlink.MavlinkConnection;
 import io.dronefleet.mavlink.MavlinkMessage;
 import io.dronefleet.mavlink.common.*;
 import io.dronefleet.mavlink.minimal.Heartbeat;
-
-import static io.dronefleet.mavlink.common.MissionState.MISSION_STATE_ACTIVE;
 import static org.example.dataservice.DataService.AIRCRAFT;
 
 public class DroneService {
@@ -29,18 +26,21 @@ public class DroneService {
         this.address = address;
         this.scheduler = Executors.newScheduledThreadPool(1);
     }
-
+  // This is a mock service that assumes aircraft moves to next wayPoint for a constant time and reaches next wayPoint On reaching wayPoint
+  // Mission_ITEM_REACHED is broadcast over UDP
     public void flightService() {
         AIRCRAFT.flyToNextWayPoint();
         if (!AIRCRAFT.isCurrentMissionCompleted()) {
             broadcastMissionItemReachedMessage(AIRCRAFT.getMissionSeq() - 1);
         }
     }
-
+   // This Service listens to UDP Port and handles messages
+    // getting the message  and handling could be seperated but due to the limitations of dronefleet library
+    // I am̀ keeping as it is
     public void listenerService() {
         try {
             while (true) {
-                System.out.println("Listening for MAVLink messages on UDP port 14551...");
+                System.out.println("Listening for MAVLink messages on UDP port number:... " +port);
                 byte[] buffer = new byte[4096]; // Create a buffer to hold incoming data
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet); // Receive the incoming packet
@@ -56,7 +56,7 @@ public class DroneService {
 
                 // Check the messages
                 if (message.getPayload() instanceof Heartbeat) {
-                    System.out.println("Heartbeat message received.........");// this was for testing
+                    System.out.println("Heartbeat message received.........");// this was for testing not requied for the task
                 } else if (message.getPayload() instanceof MissionRequestList) {
                     System.out.println("Mission_Request_List message received.........");
                     broadcastMissionCountMessage();
@@ -74,14 +74,14 @@ public class DroneService {
             }
         }
     }
-
+// Builds a MISSION_ITEM_REACHED Message and sends it over UDP port
     public void broadcastMissionItemReachedMessage(int seq) {
         try {
             MissionItemReached missionItemReached = MissionItemReached.builder()
                     .seq(seq)
                     .build();
 
-// Serialize the message
+            // Serialize the message
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             MavlinkConnection connection = MavlinkConnection.create(null, baos);
             connection.send2(0, 0, missionItemReached);
@@ -97,7 +97,7 @@ public class DroneService {
             e.printStackTrace();
         }
     }
-
+// Gets an int sequence from REQUEST_MISSION_INT message and returns associated Mission Item from the list
     public void broadcastMissionItemIntMessage(int itemSeq) {
         try {
             MissionItemInt missionItemInt = MissionItemInt.builder().
@@ -109,7 +109,7 @@ public class DroneService {
                     .z(AIRCRAFT.getMissionItemsList().get(itemSeq).getZ())
                     .build();
 
-// Serialize the message
+            // Serialize the message
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             MavlinkConnection connection = MavlinkConnection.create(null, baos);
             connection.send2(0, 0, missionItemInt);
@@ -125,7 +125,7 @@ public class DroneService {
             e.printStackTrace();
         }
     }
-
+//  Returns MISSION_COUNT message upon REQUEST_MISSION_LIST message
     public void broadcastMissionCountMessage() {
         try {
             MissionCount missionCount = MissionCount.builder()
@@ -148,7 +148,7 @@ public class DroneService {
             e.printStackTrace();
         }
     }
-
+// Broadcasting MISSION_CURRENT message every second
     public void startMissionCurrentBroadcast() {
         // Schedule the broadcastMissionCurrent to run every second
         scheduler.scheduleWithFixedDelay(this::broadcastMissionCurrent, 0, 1, TimeUnit.SECONDS);
@@ -162,7 +162,7 @@ public class DroneService {
                     .missionState()
                     .missionMode(AIRCRAFT.getCurrentMission().getMission_mode())
                     .build();
-// Serialize the message
+            // Serialize the message
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             MavlinkConnection connection = MavlinkConnection.create(null, baos);
             connection.send2(0, 0, missionCurrent);
