@@ -20,10 +20,13 @@ import static org.example.dataservice.DataService.AIRCRAFT;
 public class DroneService {
     private DatagramSocket socket;
     private ScheduledExecutorService scheduler;
+    int port;
+    InetAddress address;
 
-    public DroneService(int port) throws SocketException {
+    public DroneService(  InetAddress address,int port) throws SocketException {
         // Initialize the socket and bind it to the specific port
         this.socket = new DatagramSocket(port);
+        this.address=address;
         this.scheduler= Executors.newScheduledThreadPool(1);
     }
     public void flightService(){
@@ -69,6 +72,7 @@ public class DroneService {
             }
         }
     }
+
     public void  broadcastMissionItemReachedMessage(int seq){
         try {
             MissionItemReached missionItemReached=MissionItemReached.builder()
@@ -81,9 +85,6 @@ public class DroneService {
             connection.send2(0, 0, missionItemReached);
 
             byte[] messageBytes = baos.toByteArray();
-// Specify the target IP address and port
-        InetAddress address = InetAddress.getByName("localhost"); // Use the correct target IP address
-        int port = 14551; // Use the correct port
 
             // Create and send the packet
             DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
@@ -111,9 +112,6 @@ public class DroneService {
             connection.send2(0, 0, missionItemInt);
 
             byte[] messageBytes = baos.toByteArray();
-// Specify the target IP address and port
-        InetAddress address = InetAddress.getByName("localhost"); // Use the correct target IP address
-        int port = 14551; // Use the correct port
 
             // Create and send the packet
             DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
@@ -136,9 +134,6 @@ public class DroneService {
             connection.send2(0, 0, missionCount);
 
             byte[] messageBytes = baos.toByteArray();
-// Specify the target IP address and port
-        InetAddress address = InetAddress.getByName("localhost"); // Use the correct target IP address
-        int port = 14551; // Use the correct port
 
             // Create and send the packet
             DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
@@ -167,10 +162,6 @@ void broadcastMissionCurrent() {
             connection.send2(0, 0, missionCurrent);
 
             byte[] messageBytes = baos.toByteArray();
-// Specify the target IP address and port
-        InetAddress address = InetAddress.getByName("localhost"); // Use the correct target IP address
-        int port = 14551; // Use the correct port
-
             // Create and send the packet
             DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length,address,port);
             socket.send(packet);
